@@ -202,7 +202,7 @@ def extract_between_plus_and_k(text = "+ k"):
         return ''
     
 
-# firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"
+# firmware_url = "https://github.com/mahmoudrizkk/Ta4feya-M1/"
 def trigger_ota_update():
     """Handle OTA update process with password protection"""
     time.sleep(0.5)
@@ -229,7 +229,7 @@ def trigger_ota_update():
                     lcd_clear_line(0)
                     lcd.putstr("Starting OTA...")
                     try:
-                        firmware_url = "https://github.com/mahmoudrizkk/Vacuum-Output/"                        
+                        firmware_url = "https://github.com/mahmoudrizkk/Ta4feya-M1/"                        
                         ota_updater = OTAUpdater(SSID, PASSWORD, firmware_url, "main.py")
                         ota_updater.download_and_install_update_if_available()
                         lcd_clear_line(0)
