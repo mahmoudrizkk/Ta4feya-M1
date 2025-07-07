@@ -15,8 +15,14 @@ I2C_NUM_ROWS = 2
 I2C_NUM_COLS = 16
 
 # Initialize I2C and LCD
-i2c = I2C(0, scl=Pin(5), sda=Pin(4), freq=400000)
+i2c = I2C(0, scl=Pin(15), sda=Pin(14), freq=400000)
 lcd = I2cLcd(i2c, I2C_ADDR, I2C_NUM_ROWS, I2C_NUM_COLS)
+
+# Initialize UART for weight sensor communication
+uart = machine.UART(0, baudrate=9600, tx=machine.Pin(0), rx=machine.Pin(1))
+
+# Initialize UART1 for barcode scanner (e.g., TX=Pin(4), RX=Pin(5))
+barcode_uart = machine.UART(1, baudrate=9600, tx=machine.Pin(4), rx=machine.Pin(5))
 
 # Helper to clear a specific LCD line
 def lcd_clear_line(line):
@@ -86,12 +92,6 @@ cols = [machine.Pin(pin, machine.Pin.IN, machine.Pin.PULL_UP) for pin in COL_PIN
 # Initialize WiFi
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
-
-# Initialize UART for weight sensor communication
-uart = machine.UART(0, baudrate=9600, tx=machine.Pin(0), rx=machine.Pin(1))
-
-# Initialize UART1 for barcode scanner (e.g., TX=Pin(4), RX=Pin(5))
-barcode_uart = machine.UART(1, baudrate=9600, tx=machine.Pin(4), rx=machine.Pin(5))
 
 last_status = None
 
@@ -225,8 +225,6 @@ def trigger_ota_update():
             if key == '#':  # Enter key
                 if password_buffer == "1234":  # OTA password
                     lcd_clear_line(0)
-                    lcd.putstr("                ")
-                    lcd_clear_line(0)
                     lcd.putstr("Starting OTA...")
                     try:
                         firmware_url = "https://github.com/mahmoudrizkk/Ta4feya-M1/"                        
@@ -237,8 +235,6 @@ def trigger_ota_update():
                         time.sleep(3)
                     except Exception as e:
                         lcd_clear_line(0)
-                        lcd.putstr("                ")
-                        lcd_clear_line(0)
                         lcd.putstr("OTA Failed")
                         lcd_clear_line(1)
                         lcd.putstr(str(e)[:6])
@@ -246,13 +242,9 @@ def trigger_ota_update():
                     return
                 else:
                     lcd_clear_line(0)
-                    lcd.putstr("                ")
-                    lcd_clear_line(0)
                     lcd.putstr("Wrong Password!")
                     time.sleep(2)
                     password_buffer = ""
-                    lcd_clear_line(0)
-                    lcd.putstr("                ")
                     lcd_clear_line(0)
                     lcd.putstr("Enter Password:")
                     lcd_clear_line(1)
