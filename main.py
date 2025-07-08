@@ -413,11 +413,11 @@ def receive_barcode():
 
 def menu_select_type():
     """Menu for selecting Out or Cutting."""
+    lcd_clear_line(0)
+    lcd.putstr("Select Type:")
+    lcd_clear_line(1)
+    lcd.putstr("1:Out 2:Cutting")
     while True:
-        lcd_clear_line(0)
-        lcd.putstr("Select Type:")
-        lcd_clear_line(1)
-        lcd.putstr("1:Out 2:Cutting")
         key = scan_keypad()
         if key in ('1', '2'):
             return key
@@ -427,11 +427,11 @@ def menu_select_type():
 
 def menu_choose_input_method():
     """Menu for choosing Key or Barcode."""
+    lcd_clear_line(0)
+    lcd.putstr("ID:1-Key 2-Barc")
+    lcd_clear_line(1)
+    lcd.putstr("B:Back")
     while True:
-        lcd_clear_line(0)
-        lcd.putstr("ID:1-Key 2-Barc")
-        lcd_clear_line(1)
-        lcd.putstr("B:Back")
         key = scan_keypad()
         if key in ('1', '2'):
             return key
@@ -441,11 +441,11 @@ def menu_choose_input_method():
 def menu_enter_piece_id(input_method):
     """Menu for entering piece ID by key or barcode."""
     if input_method == '1':
-        # Keypad entry
         lcd_clear_line(0)
         lcd.putstr("Enter Piece ID")
         lcd_clear_line(1)
         lcd.putstr("End with #:")
+        # Keypad entry
         piece_id = ""
         last_key = None
         while True:
