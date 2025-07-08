@@ -201,7 +201,6 @@ def extract_between_plus_and_k(text = "+ k"):
     except ValueError:
         return ''
     
-
 # firmware_url = "https://github.com/mahmoudrizkk/Ta4feya-M1/"
 def trigger_ota_update():
     """Handle OTA update process with password protection"""
@@ -411,7 +410,13 @@ def receive_barcode():
     except Exception:
         return ""
 
-def menu_select_type():
+# Rename menu_select_type to select_piece_type
+# Rename menu_choose_input_method to select_input_method
+# Rename menu_enter_piece_id_with_b to enter_piece_id
+# Rename menu_take_weight_with_b to enter_weight
+# Update all references in main and elsewhere accordingly
+
+def select_piece_type():
     """Menu for selecting Out or Cutting."""
     lcd_clear_line(0)
     lcd.putstr("Select Type:")
@@ -423,9 +428,9 @@ def menu_select_type():
             return key
         elif key == '*':
             trigger_ota_update()
-        # Optionally handle 'B' for restart
 
-def menu_choose_input_method():
+
+def select_input_method():
     """Menu for choosing Key or Barcode."""
     lcd_clear_line(0)
     lcd.putstr("ID:1-Key 2-Barc")
@@ -444,9 +449,8 @@ def menu_choose_input_method():
             time.sleep(1)
             return None  # Signal to go back to type selection
 
-# Helper: menu_enter_piece_id_with_b
 
-def menu_enter_piece_id_with_b(input_method):
+def enter_piece_id(input_method):
     if input_method == '1':
         lcd_clear_line(0)
         lcd.putstr("Enter Piece ID")
@@ -491,9 +495,8 @@ def menu_enter_piece_id_with_b(input_method):
         except Exception:
             return ""
 
-# Helper: menu_take_weight_with_b
 
-def menu_take_weight_with_b():
+def enter_weight():
     lcd_clear_line(0)
     lcd.putstr("Reading Weight")
     lcd_clear_line(1)
@@ -513,7 +516,6 @@ def menu_take_weight_with_b():
     #     time.sleep_ms(100)
     return weight
 
-# Main function
 
 def main():
     piece_type = None
@@ -522,13 +524,13 @@ def main():
     while True:
         # 1. Inquire type if not set
         if piece_type is None:
-            piece_type = menu_select_type()
+            piece_type = select_piece_type()
             if not piece_type:
                 continue
 
         # 2. Inquire input method if not set
         if input_method is None:
-            input_method = menu_choose_input_method()
+            input_method = select_input_method()
             if not input_method:
                 piece_type = None
                 continue
@@ -536,7 +538,7 @@ def main():
         # 3. Scanning loop
         while True:
             # Piece ID entry, with B handling
-            result = menu_enter_piece_id_with_b(input_method)
+            result = enter_piece_id(input_method)
             if result == 'B':
                 input_method = None
                 break  # Go back to input method selection
@@ -547,7 +549,7 @@ def main():
                 break  # Go back to the top of the main loop
 
             # Weight entry, with B handling
-            result = menu_take_weight_with_b()
+            result = enter_weight()
             if result == 'B':
                 input_method = None
                 break  # Go back to input method selection
