@@ -442,11 +442,6 @@ def select_input_method():
             return key
         elif key == 'B':
             # Show message and return to type selection
-            lcd_clear_line(0)
-            lcd.putstr("Back to Type")
-            lcd_clear_line(1)
-            lcd.putstr("")
-            time.sleep(1)
             return None  # Signal to go back to type selection
 
 
@@ -506,6 +501,7 @@ def enter_weight():
     lcd_clear_line(0)
     lcd.putstr(f"Weight: {weight}")
     lcd_clear_line(1)
+    time.sleep(2)
     # lcd.putstr("Press # to send")
     # while True:
     #     key = scan_keypad()
