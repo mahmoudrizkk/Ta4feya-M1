@@ -411,98 +411,110 @@ def receive_barcode():
     except Exception:
         return ""
 
+def menu_select_type():
+    """Menu for selecting Out or Cutting."""
+    while True:
+        lcd_clear_line(0)
+        lcd.putstr("Select Type:")
+        lcd_clear_line(1)
+        lcd.putstr("1:Out 2:Cutting")
+        key = scan_keypad()
+        if key in ('1', '2'):
+            return key
+        elif key == '*':
+            trigger_ota_update()
+        # Optionally handle 'B' for restart
 
+def menu_choose_input_method():
+    """Menu for choosing Key or Barcode."""
+    while True:
+        lcd_clear_line(0)
+        lcd.putstr("ID:1-Key 2-Barc")
+        lcd_clear_line(1)
+        lcd.putstr("B:Back")
+        key = scan_keypad()
+        if key in ('1', '2'):
+            return key
+        elif key == 'B':
+            return None  # Signal to go back
+
+def menu_enter_piece_id(input_method):
+    """Menu for entering piece ID by key or barcode."""
+    if input_method == '1':
+        # Keypad entry
+        lcd_clear_line(0)
+        lcd.putstr("Enter Piece ID")
+        lcd_clear_line(1)
+        lcd.putstr("End with #:")
+        piece_id = ""
+        last_key = None
+        while True:
+            key = scan_keypad()
+            if key and key != last_key:
+                if key == '#':
+                    break
+                elif key in '0123456789ABCD':
+                    if len(piece_id) < 16:
+                        piece_id += key
+                        lcd_clear_line(1)
+                        lcd.putstr(piece_id)
+                last_key = key
+            elif not key:
+                last_key = None
+            time.sleep_ms(100)
+        return piece_id
+    else:
+        # Barcode entry
+        lcd_clear_line(0)
+        lcd.putstr("Scan Barcode...")
+        lcd_clear_line(1)
+        lcd.putstr("")
+        piece_id = receive_barcode()
+        lcd_clear_line(1)
+        lcd.putstr(piece_id)
+        return piece_id
+
+def menu_take_weight():
+    """Menu for taking weight."""
+    lcd_clear_line(0)
+    lcd.putstr("Reading Weight")
+    lcd_clear_line(1)
+    lcd.putstr("Please wait...")
+    # weight = receive_number()
+    weight = "1000"
+    lcd_clear_line(0)
+    lcd.putstr(f"Weight: {weight}")
+    lcd_clear_line(1)
+    lcd.putstr("Press # to send")
+    while True:
+        key = scan_keypad()
+        if key == '#':
+            break
+        time.sleep_ms(100)
+    return weight
 
 # Main function
 def main():
     while True:
-        # 1. Select piece type
-        lcd_clear_line(0)
-        lcd.putstr("Select Type:   ")
-        lcd_clear_line(1)
-        lcd.putstr("1:Out 2:Cutting")
-        piece_type = None
-        while piece_type not in ('1', '2'):
-            key = scan_keypad()
-            if key in ('1', '2'):
-                piece_type = key
-                lcd_clear_line(0)
-                lcd.putstr("Type: Out     " if key == '1' else "Type: Cutting ")
-                lcd_clear_line(1)
-                lcd.putstr("ID:1-Key 2-Barc")
-                time.sleep(1)
-            elif key == '*':
-                trigger_ota_update()
-        
-        # 2. Select piece ID input method
-        input_method = None
-        while input_method not in ('1', '2'):
-            key = scan_keypad()
-            if key in ('1', '2'):
-                input_method = key
-                if input_method == '1':
-                    # Keypad entry
-                    lcd_clear_line(0)
-                    lcd.putstr("Enter Piece ID  ")
-                    lcd_clear_line(1)
-                    lcd.putstr("End with #:     ")
-                    piece_id = ""
-                    last_key = None
-                    while True:
-                        key = scan_keypad()
-                        if key and key != last_key:
-                            if key == '#':
-                                break
-                            elif key in '0123456789ABCD':
-                                if len(piece_id) < 16:
-                                    piece_id += key
-                                    lcd_clear_line(1)
-                                    lcd.putstr(piece_id)
-                            last_key = key
-                        elif not key:
-                            last_key = None
-                        time.sleep_ms(100)
-                else:
-                    # Barcode entry
-                    lcd_clear_line(0)
-                    lcd.putstr("Scan Barcode... ")
-                    lcd_clear_line(1)
-                    lcd.putstr("                ")
-                    piece_id = receive_barcode()
-                    lcd_clear_line(1)
-                    lcd.putstr(piece_id)
-                time.sleep(1)
-        
-        # 3. Show piece ID
-        lcd_clear_line(0)
-        lcd.putstr("Piece ID:       ")
-        lcd_clear_line(1)
-        lcd.putstr(piece_id)
-        time.sleep(1)
+        # Menu 1: Select Out or Cutting
+        piece_type = menu_select_type()
+        if not piece_type:
+            continue  # Restart if needed
 
-        # 4. Read weight
-        lcd_clear_line(0)
-        lcd.putstr("Reading Weight  ")
-        lcd_clear_line(1)
-        lcd.putstr("Please wait...  ")
-        # weight = receive_number()
-        weight = 100
-        lcd_clear_line(0)
-        lcd.putstr(f"Weight: {weight}")
-        lcd_clear_line(1)
-        lcd.putstr("Press # to send ")
+        # Menu 2: Choose Key or Barcode
+        input_method = menu_choose_input_method()
+        if not input_method:
+            continue  # Go back to type selection
 
-        # 5. Wait for confirmation
-        while True:
-            key = scan_keypad()
-            if key == '#':
-                break
-            time.sleep_ms(100)
+        # Menu 3: Enter Piece ID
+        piece_id = menu_enter_piece_id(input_method)
 
-        # 6. Send data
+        # Menu 4: Take Weight
+        weight = menu_take_weight()
+
+        # Send data
         send_number(weight, piece_id, piece_type)
         time.sleep(1)
-        # Clear LCD for next loop
         lcd_clear_line(0)
         lcd_clear_line(1)
 
