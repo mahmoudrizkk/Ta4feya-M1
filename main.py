@@ -446,7 +446,6 @@ def select_input_method():
             # Show message and return to type selection
             return None  # Signal to go back to type selection
 
-
 def enter_piece_id(input_method):
     if input_method == '1':
         lcd_clear_line(0)
@@ -497,7 +496,6 @@ def enter_piece_id(input_method):
         except Exception:
             return ""
 
-
 def enter_weight():
     lcd_clear_line(0)
     lcd.putstr("Reading Weight")
@@ -518,7 +516,6 @@ def enter_weight():
     #         break
     #     time.sleep_ms(100)
     return weight
-
 
 def main():
     piece_type = None
