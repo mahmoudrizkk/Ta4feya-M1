@@ -517,6 +517,7 @@ def main():
         time.sleep(1)
         lcd_clear_line(0)
         lcd_clear_line(1)
+        
 
 if __name__ == "__main__":
     # Ensure WiFi is connected before starting main loop
