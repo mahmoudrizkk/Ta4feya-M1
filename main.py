@@ -438,18 +438,20 @@ def menu_choose_input_method():
         elif key == 'B':
             return None  # Signal to go back
 
-def menu_enter_piece_id(input_method):
-    """Menu for entering piece ID by key or barcode."""
+# Helper: menu_enter_piece_id_with_b
+
+def menu_enter_piece_id_with_b(input_method):
     if input_method == '1':
         lcd_clear_line(0)
         lcd.putstr("Enter Piece ID")
         lcd_clear_line(1)
         lcd.putstr("End with #:")
-        # Keypad entry
         piece_id = ""
         last_key = None
         while True:
             key = scan_keypad()
+            if key == 'B':
+                return 'B'
             if key and key != last_key:
                 if key == '#':
                     break
@@ -464,18 +466,28 @@ def menu_enter_piece_id(input_method):
             time.sleep_ms(100)
         return piece_id
     else:
-        # Barcode entry
         lcd_clear_line(0)
         lcd.putstr("Scan Barcode...")
         lcd_clear_line(1)
         lcd.putstr("")
-        piece_id = receive_barcode()
-        lcd_clear_line(1)
-        lcd.putstr(piece_id)
-        return piece_id
+        buffer = b""
+        while True:
+            if barcode_uart.any():
+                char = barcode_uart.read(1)
+                if char == b'B':
+                    return 'B'
+                if char == b'=':
+                    break
+                buffer += char
+            time.sleep_ms(10)
+        try:
+            return buffer.decode().strip()
+        except Exception:
+            return ""
 
-def menu_take_weight():
-    """Menu for taking weight."""
+# Helper: menu_take_weight_with_b
+
+def menu_take_weight_with_b():
     lcd_clear_line(0)
     lcd.putstr("Reading Weight")
     lcd_clear_line(1)
@@ -488,36 +500,82 @@ def menu_take_weight():
     lcd.putstr("Press # to send")
     while True:
         key = scan_keypad()
+        if key == 'B':
+            return 'B'
         if key == '#':
             break
         time.sleep_ms(100)
     return weight
 
 # Main function
+
 def main():
+    piece_type = None
+    input_method = None
+
     while True:
-        # Menu 1: Select Out or Cutting
-        piece_type = menu_select_type()
-        if not piece_type:
-            continue  # Restart if needed
+        # 1. Inquire type if not set
+        if piece_type is None:
+            piece_type = menu_select_type()
+            if not piece_type:
+                continue
 
-        # Menu 2: Choose Key or Barcode
-        input_method = menu_choose_input_method()
-        if not input_method:
-            continue  # Go back to type selection
+        # 2. Inquire input method if not set
+        if input_method is None:
+            input_method = menu_choose_input_method()
+            if not input_method:
+                continue
 
-        # Menu 3: Enter Piece ID
-        piece_id = menu_enter_piece_id(input_method)
+        # 3. Scanning loop
+        while True:
+            # Piece ID entry, with B handling
+            b_count = 0
+            while True:
+                result = menu_enter_piece_id_with_b(input_method)
+                if result == 'B':
+                    b_count += 1
+                    if b_count == 1:
+                        input_method = None
+                        break  # Go back to input method selection
+                    elif b_count == 2:
+                        input_method = None
+                        piece_type = None
+                        break  # Go back to type selection
+                else:
+                    piece_id = result
+                    b_count = 0
+                    break  # Got a piece ID
 
-        # Menu 4: Take Weight
-        weight = menu_take_weight()
+            if piece_type is None or input_method is None:
+                break  # Go back to the top of the main loop
 
-        # Send data
-        send_number(weight, piece_id, piece_type)
-        time.sleep(1)
-        lcd_clear_line(0)
-        lcd_clear_line(1)
-        
+            # Weight entry, with B handling
+            b_count = 0
+            while True:
+                result = menu_take_weight_with_b()
+                if result == 'B':
+                    b_count += 1
+                    if b_count == 1:
+                        input_method = None
+                        break  # Go back to input method selection
+                    elif b_count == 2:
+                        input_method = None
+                        piece_type = None
+                        break  # Go back to type selection
+                else:
+                    weight = result
+                    b_count = 0
+                    break  # Got a weight
+
+            if piece_type is None or input_method is None:
+                break  # Go back to the top of the main loop
+
+            # Send data
+            send_number(weight, piece_id, piece_type)
+            time.sleep(1)
+            lcd_clear_line(0)
+            lcd_clear_line(1)
+
 
 if __name__ == "__main__":
     # Ensure WiFi is connected before starting main loop
