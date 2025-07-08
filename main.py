@@ -78,8 +78,10 @@ SSID = "SYS-Horizon"
 PASSWORD = "9078@horiz"
 
 # 4x4 Keypad Configuration
-COL_PINS = [6, 7, 8, 9]
-ROW_PINS = [10, 11, 12, 13]
+ROW_PINS = [9, 8, 7, 6]
+COL_PINS = [13, 12, 11, 10]
+# COL_PINS = [6, 7, 8, 9]
+# ROW_PINS = [10, 11, 12, 13]
 KEYS = [
     ['1', '4', '7', '*'],
     ['2', '5', '8', '0'],
