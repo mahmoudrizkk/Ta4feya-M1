@@ -503,14 +503,14 @@ def menu_take_weight_with_b():
     lcd_clear_line(0)
     lcd.putstr(f"Weight: {weight}")
     lcd_clear_line(1)
-    lcd.putstr("Press # to send")
-    while True:
-        key = scan_keypad()
-        if key == 'B':
-            return 'B'
-        if key == '#':
-            break
-        time.sleep_ms(100)
+    # lcd.putstr("Press # to send")
+    # while True:
+    #     key = scan_keypad()
+    #     if key == 'B':
+    #         return 'B'
+    #     if key == '#':
+    #         break
+    #     time.sleep_ms(100)
     return weight
 
 # Main function
@@ -534,19 +534,12 @@ def main():
                 continue
 
         # 3. Scanning loop
-        b_count = 0  # <-- Move b_count here, so it persists for the whole scan cycle
         while True:
             # Piece ID entry, with B handling
             result = menu_enter_piece_id_with_b(input_method)
             if result == 'B':
-                b_count += 1
-                if b_count == 1:
-                    input_method = None
-                    break  # Go back to input method selection
-                elif b_count == 2:
-                    input_method = None
-                    piece_type = None
-                    break  # Go back to type selection
+                input_method = None
+                break  # Go back to input method selection
             else:
                 piece_id = result
 
@@ -556,22 +549,13 @@ def main():
             # Weight entry, with B handling
             result = menu_take_weight_with_b()
             if result == 'B':
-                b_count += 1
-                if b_count == 1:
-                    input_method = None
-                    break  # Go back to input method selection
-                elif b_count == 2:
-                    input_method = None
-                    piece_type = None
-                    break  # Go back to type selection
+                input_method = None
+                break  # Go back to input method selection
             else:
                 weight = result
 
             if piece_type is None or input_method is None:
                 break  # Go back to the top of the main loop
-
-            # If we reach here, a full scan was completed, so reset b_count
-            b_count = 0
 
             # Send data
             send_number(weight, piece_id, piece_type)
