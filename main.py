@@ -477,11 +477,16 @@ def enter_piece_id(input_method):
         lcd.putstr("")
         buffer = b""
         while True:
+            # Check for B press on keypad while waiting for barcode
+            key = scan_keypad()
+            if key == 'B':
+                return 'B'
             if barcode_uart.any():
                 char = barcode_uart.read(1)
-                if char == b'B':
-                    return 'B'
                 if char == b'=':
+                    lcd_clear_line(1)
+                    lcd.putstr(buffer)
+                    time.sleep(2)
                     break
                 buffer += char
             time.sleep_ms(10)
