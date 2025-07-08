@@ -15,14 +15,14 @@ I2C_NUM_ROWS = 2
 I2C_NUM_COLS = 16
 
 # Initialize I2C and LCD
-i2c = I2C(0, scl=Pin(15), sda=Pin(14), freq=400000)
+i2c = I2C(1, scl=Pin(15), sda=Pin(14), freq=400000)
 lcd = I2cLcd(i2c, I2C_ADDR, I2C_NUM_ROWS, I2C_NUM_COLS)
 
 # Initialize UART for weight sensor communication
 uart = machine.UART(0, baudrate=9600, tx=machine.Pin(0), rx=machine.Pin(1))
 
 # Initialize UART1 for barcode scanner (e.g., TX=Pin(4), RX=Pin(5))
-barcode_uart = machine.UART(1, baudrate=9600, tx=machine.Pin(4), rx=machine.Pin(5))
+barcode_uart = machine.UART(1, baudrate=115200, tx=machine.Pin(4), rx=machine.Pin(5))
 
 # Helper to clear a specific LCD line
 def lcd_clear_line(line):
@@ -33,11 +33,11 @@ def lcd_clear_line(line):
 # Display welcome message
 #
 #  ----------------
-# |Vacuum Output   |
+# |Ta4feya         |
 # |                |
 #  ----------------
 lcd_clear_line(0)
-lcd.putstr("Vacuum Output")
+lcd.putstr("Ta4feya")
 
 # Load and display version from JSON file
 try:
@@ -294,7 +294,7 @@ def send_number(weight, cuttingId, status):
         lcd.putstr(f"Sending:{weight}")
 
         # Send the POST request
-        response = requests.post(url)
+        response = requests.post(url, json={})
         try:
             response_json = response.json()
         except Exception:
@@ -307,9 +307,9 @@ def send_number(weight, cuttingId, status):
             # |InZ:xxxxx       |
             #  ----------------
             lcd_clear_line(0)
-            lcd.putstr("Success".ljust(16))
+            lcd.putstr("Success")
             lcd_clear_line(1)
-            lcd.putstr(f"InZ:{response_json.get('pieceWeight_InZ', '')}"[:16])
+            lcd.putstr(f"InZ:{response_json.get('pieceWeight_InZ', '')}")
             time.sleep(2)
             #
             #  ----------------
@@ -317,9 +317,9 @@ def send_number(weight, cuttingId, status):
             # |Out:yyyyy       |
             #  ----------------
             lcd_clear_line(0)
-            lcd.putstr(f"In:{response_json.get('pieceWeight_InZ', '')}"[:16])
+            lcd.putstr(f"In:{response_json.get('pieceWeight_InZ', '')}")
             lcd_clear_line(1)
-            lcd.putstr(f"Out:{weight}"[:16])
+            lcd.putstr(f"Out:{weight}")
             time.sleep(2)
         elif response_json:
             # Error with known statusCode/message
@@ -331,7 +331,7 @@ def send_number(weight, cuttingId, status):
             # |<error message> |
             #  ----------------
             lcd_clear_line(0)
-            lcd.putstr(f"Err:{code}".ljust(16))
+            lcd.putstr(f"Err:{code}")
             lcd_clear_line(1)
             # Map known error codes/messages to user-friendly text
             if msg == "NO3":
@@ -340,35 +340,35 @@ def send_number(weight, cuttingId, status):
                 # |Err:code        |
                 # |Not found       |
                 #  ----------------
-                lcd.putstr("Not found".ljust(16))
+                lcd.putstr("Not found")
             elif msg == "NO1":
                 #
                 #  ----------------
                 # |Err:code        |
                 # |Wrong type(1)   |
                 #  ----------------
-                lcd.putstr("Wrong type(1)".ljust(16))
+                lcd.putstr("Wrong type(1)")
             elif msg == "NO2":
                 #
                 #  ----------------
                 # |Err:code        |
                 # |Wrong type(2)   |
                 #  ----------------
-                lcd.putstr("Wrong type(2)".ljust(16))
+                lcd.putstr("Wrong type(2)")
             elif msg == "Insufficient stock in store":
                 #
                 #  ----------------
                 # |Err:code        |
                 # |No stock        |
                 #  ----------------
-                lcd.putstr("No stock".ljust(16))
+                lcd.putstr("No stock")
             else:
                 #
                 #  ----------------
                 # |Err:code        |
                 # |<custom error>  |
                 #  ----------------
-                lcd.putstr(msg[:16].ljust(16))
+                lcd.putstr(msg)
             time.sleep(2)
         else:
             # Unknown error
@@ -378,9 +378,9 @@ def send_number(weight, cuttingId, status):
             # |<status code>    |
             #  ----------------
             lcd_clear_line(0)
-            lcd.putstr("Unknown error".ljust(16))
+            lcd.putstr("Unknown error")
             lcd_clear_line(1)
-            lcd.putstr(str(response.status_code).ljust(16))
+            lcd.putstr(str(response.status_code))
             time.sleep(2)
         response.close()
         time.sleep(3)
@@ -431,6 +431,8 @@ def main():
                 lcd_clear_line(1)
                 lcd.putstr("ID:1-Key 2-Barc")
                 time.sleep(1)
+            elif key == '*':
+                trigger_ota_update()
         
         # 2. Select piece ID input method
         input_method = None
@@ -455,7 +457,7 @@ def main():
                                 if len(piece_id) < 16:
                                     piece_id += key
                                     lcd_clear_line(1)
-                                    lcd.putstr(piece_id.ljust(16))
+                                    lcd.putstr(piece_id)
                             last_key = key
                         elif not key:
                             last_key = None
@@ -468,14 +470,14 @@ def main():
                     lcd.putstr("                ")
                     piece_id = receive_barcode()
                     lcd_clear_line(1)
-                    lcd.putstr(piece_id[:16].ljust(16))
+                    lcd.putstr(piece_id)
                 time.sleep(1)
         
         # 3. Show piece ID
         lcd_clear_line(0)
         lcd.putstr("Piece ID:       ")
         lcd_clear_line(1)
-        lcd.putstr(piece_id[:16].ljust(16))
+        lcd.putstr(piece_id)
         time.sleep(1)
 
         # 4. Read weight
@@ -483,9 +485,10 @@ def main():
         lcd.putstr("Reading Weight  ")
         lcd_clear_line(1)
         lcd.putstr("Please wait...  ")
-        weight = receive_number()
+        # weight = receive_number()
+        weight = 100
         lcd_clear_line(0)
-        lcd.putstr(f"Weight: {weight}".ljust(16))
+        lcd.putstr(f"Weight: {weight}")
         lcd_clear_line(1)
         lcd.putstr("Press # to send ")
 
@@ -504,4 +507,22 @@ def main():
         lcd_clear_line(1)
 
 if __name__ == "__main__":
+    # Ensure WiFi is connected before starting main loop
+    lcd_clear_line(0)
+    lcd.putstr("Connecting WiFi...")
+    lcd_clear_line(1)
+    lcd.putstr("")
+    connect_wifi()
+    while not wlan.isconnected():
+        lcd_clear_line(0)
+        lcd.putstr("WiFi not ready")
+        lcd_clear_line(1)
+        lcd.putstr("Retrying...")
+        connect_wifi()
+        time.sleep(1)
+    lcd_clear_line(0)
+    lcd.putstr("WiFi Connected")
+    lcd_clear_line(1)
+    lcd.putstr("")
+    time.sleep(1)
     main()
