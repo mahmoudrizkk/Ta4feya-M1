@@ -593,3 +593,4 @@ if __name__ == "__main__":
     lcd.putstr("")
     time.sleep(1)
     main()
+    
