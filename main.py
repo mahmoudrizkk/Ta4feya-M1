@@ -430,13 +430,19 @@ def menu_choose_input_method():
     lcd_clear_line(0)
     lcd.putstr("ID:1-Key 2-Barc")
     lcd_clear_line(1)
-    lcd.putstr("B:Back")
+    lcd.putstr("B:Back to Type")
     while True:
         key = scan_keypad()
         if key in ('1', '2'):
             return key
         elif key == 'B':
-            return None  # Signal to go back
+            # Show message and return to type selection
+            lcd_clear_line(0)
+            lcd.putstr("Back to Type")
+            lcd_clear_line(1)
+            lcd.putstr("")
+            time.sleep(1)
+            return None  # Signal to go back to type selection
 
 # Helper: menu_enter_piece_id_with_b
 
@@ -524,6 +530,7 @@ def main():
         if input_method is None:
             input_method = menu_choose_input_method()
             if not input_method:
+                piece_type = None
                 continue
 
         # 3. Scanning loop
