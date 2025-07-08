@@ -485,7 +485,7 @@ def enter_piece_id(input_method):
                 char = barcode_uart.read(1)
                 if char == b'=':
                     lcd_clear_line(1)
-                    lcd.putstr(buffer)
+                    lcd.putstr(buffer.decode())
                     time.sleep(2)
                     break
                 buffer += char
