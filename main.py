@@ -501,8 +501,8 @@ def enter_weight():
     lcd.putstr("Reading Weight")
     lcd_clear_line(1)
     lcd.putstr("Please wait...")
-    # weight = receive_number()
-    weight = "1000"
+    weight = receive_number()
+    #weight = "1000"
     lcd_clear_line(0)
     lcd.putstr(f"Weight: {weight}")
     lcd_clear_line(1)
