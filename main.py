@@ -485,9 +485,9 @@ def enter_piece_id(input_method):
             if barcode_uart.any():
                 char = barcode_uart.read(1)
                 if char == b'=':
-                    lcd_clear_line(1)
-                    lcd.putstr(buffer.decode())
-                    time.sleep(2)
+                    # lcd_clear_line(1)
+                    # lcd.putstr(buffer.decode())
+                    # time.sleep(2)
                     break
                 buffer += char
             time.sleep_ms(10)
@@ -550,6 +550,8 @@ def main():
 
             # Weight entry, with B handling
             result = enter_weight()
+            lcd_clear_line(1)
+            lcd.putstr(piece_id)
             if result == 'B':
                 input_method = None
                 break  # Go back to input method selection
