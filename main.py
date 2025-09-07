@@ -399,6 +399,7 @@ def send_number(weight, cuttingId, status):
 
 def receive_barcode():
     """Receive barcode data from UART1 (barcode_uart), ending with '='"""
+    flush_uart()
     buffer = b""
     while True:
         if barcode_uart.any():
